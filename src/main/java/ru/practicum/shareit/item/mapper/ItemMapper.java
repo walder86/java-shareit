@@ -17,9 +17,8 @@ public class ItemMapper {
         );
     }
 
-    public static Item toItem(Long itemId, ItemDto itemDto, User owner, ItemRequest request) {
+    public static Item toItem(ItemDto itemDto, User owner, ItemRequest request) {
         return new Item(
-                itemId,
                 itemDto.getName(),
                 itemDto.getDescription(),
                 itemDto.getAvailable(),

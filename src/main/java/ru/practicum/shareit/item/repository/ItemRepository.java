@@ -7,8 +7,6 @@ import java.util.Optional;
 
 public interface ItemRepository {
 
-    List<Item> getItems();
-
     List<Item> getItemsByUserId(Long userId);
 
     Item createItem(Item item);
@@ -19,5 +17,4 @@ public interface ItemRepository {
 
     List<Item> searchItemsByText(String text);
 
-    Long getNewItemId();
 }

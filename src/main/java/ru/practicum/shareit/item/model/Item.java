@@ -15,4 +15,12 @@ public class Item {
     private Boolean available;
     private User owner;
     private ItemRequest request;
+
+    public Item(String name, String description, Boolean available, User owner, ItemRequest request) {
+        this.name = name;
+        this.description = description;
+        this.available = available;
+        this.owner = owner;
+        this.request = request;
+    }
 }

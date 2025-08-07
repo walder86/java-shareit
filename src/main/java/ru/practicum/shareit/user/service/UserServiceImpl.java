@@ -19,9 +19,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto getUserById(Long userId) {
         log.info("Запрос пользователя с ID = {}", userId);
-        User userById = userRepository.getUserById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с ID = " + userId + " не найден"));
+        User userById = getUserWithCheck(userId);
         return UserMapper.toUserDto(userById);
+    }
+
+    @Override
+    public User getUserWithCheck(Long userId) {
+        return userRepository.getUserById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с ID = " + userId + " не найден"));
     }
 
     @Override
@@ -30,15 +35,13 @@ public class UserServiceImpl implements UserService {
         userRepository.checkEmail(userDto.getEmail());
         return UserMapper.toUserDto(
                 userRepository.createUser(
-                        UserMapper.toUser(
-                                userDto, userRepository.getNewUserId())));
+                        UserMapper.toUser(userDto)));
     }
 
     @Override
     public UserDto updateUser(UserDto userDto, Long userId) {
         log.info("Обновление пользователя с ID = {}", userId);
-        User findUser = userRepository.getUserById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с ID = " + userId + " не найден"));
+        User findUser = getUserWithCheck(userId);
         if (userDto.getEmail() != null && !userDto.getEmail().equals(findUser.getEmail())) {
             userRepository.checkEmail(userDto.getEmail());
         }
@@ -52,8 +55,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUserById(Long userId) {
         log.info("Удаление пользователя с ID = {}", userId);
-        userRepository.getUserById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с ID = " + userId + " не найден"));
+        getUserWithCheck(userId);
         userRepository.deleteUserById(userId);
     }
 }

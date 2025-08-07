@@ -17,7 +17,5 @@ public interface UserRepository {
 
     void deleteUserById(Long userId);
 
-    Long getNewUserId();
-
     void checkEmail(String email);
 }

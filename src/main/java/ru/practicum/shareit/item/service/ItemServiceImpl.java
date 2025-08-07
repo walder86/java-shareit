@@ -10,7 +10,7 @@ import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.user.service.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,52 +22,54 @@ import java.util.Objects;
 public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
 
     @Override
     public List<ItemDto> getItemsByUserId(Long userId) {
         log.info("Поиск вещей пользователя с ID = {}", userId);
-        userRepository.getUserById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с ID = " + userId + " не найден"));
+        userService.getUserWithCheck(userId);
         List<Item> itemsByUserId = itemRepository.getItemsByUserId(userId);
         return itemsByUserId.stream()
                 .map(ItemMapper::toItemDto)
                 .toList();
     }
 
+    public Item getItemWithCheck(Long itemId) {
+        return itemRepository.getItemById(itemId)
+                .orElseThrow(() -> new NotFoundException("Вещь с ID = " + itemId + " не найдена"));
+    }
+
     @Override
     public ItemDto createItem(ItemDto itemDto, Long userId) {
         log.info("Создание вещи у пользователя с ID = {}", userId);
-        User user = userRepository.getUserById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с ID = " + userId + " не найден"));
+        User user = userService.getUserWithCheck(userId);
         return ItemMapper.toItemDto(
                 itemRepository.createItem(
-                        ItemMapper.toItem(
-                                itemRepository.getNewItemId(), itemDto, user, null)));
+                        ItemMapper.toItem(itemDto, user, null)));
     }
 
     @Override
     public ItemDto updateItem(ItemDto itemDto, Long itemId, Long userId) {
         log.info("Обновление вещи у пользователя с ID = {}", userId);
-        Item findItem = itemRepository.getItemById(itemId)
-                .orElseThrow(() -> new NotFoundException("Вещь с ID = " + itemId + " не найдена"));
+
+        Item findItem = getItemWithCheck(itemId);
         checkUser(findItem, userId);
-        userRepository.getUserById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с ID = " + userId + " не найден"));
+        userService.getUserWithCheck(userId);
+
         findItem.setName(itemDto.getName() == null || itemDto.getName().isBlank() ?
                 findItem.getName() : itemDto.getName());
         findItem.setDescription(itemDto.getDescription() == null || itemDto.getDescription().isBlank() ?
                 findItem.getDescription() : itemDto.getDescription());
         findItem.setAvailable(itemDto.getAvailable() != null ? itemDto.getAvailable() : findItem.getAvailable());
+
         return ItemMapper.toItemDto(itemRepository.updateItem(findItem));
     }
 
     @Override
     public ItemDto getItemById(Long itemId) {
         log.info("Запрос вещи с ID = {}", itemId);
-        Item item = itemRepository.getItemById(itemId)
-                .orElseThrow(() -> new NotFoundException("Вещь с ID = " + itemId + " не найдена"));
+        Item item = getItemWithCheck(itemId);
         return ItemMapper.toItemDto(item);
     }
 

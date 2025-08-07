@@ -9,7 +9,7 @@ import java.util.*;
 @Repository
 public class UserRepositoryImpl implements UserRepository {
 
-    private Map<Long, User> users = new HashMap<>();
+    private final Map<Long, User> users = new HashMap<>();
 
     @Override
     public List<User> getUsers() {
@@ -23,6 +23,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public User createUser(User user) {
+        user.setId(getNewUserId());
         users.put(user.getId(), user);
         return users.get(user.getId());
     }
@@ -39,19 +40,17 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public Long getNewUserId() {
-        return getUsers().stream()
-                .map(User::getId)
-                .max(Long::compareTo)
-                .orElse(0L) + 1;
-    }
-
-    @Override
     public void checkEmail(String email) {
         if (getUsers().stream()
                 .map(User::getEmail)
                 .anyMatch(email::equals)) {
             throw new AlreadyExistException("Пользователь с почтой " + email + " уже существует");
         }
+    }
+
+    private Long getNewUserId() {
+        return users.keySet().stream()
+                .max(Long::compareTo)
+                .orElse(0L) + 1;
     }
 }

@@ -8,12 +8,7 @@ import java.util.*;
 @Repository
 public class ItemRepositoryImpl implements ItemRepository {
 
-    private Map<Long, Item> items = new HashMap<>();
-
-    @Override
-    public List<Item> getItems() {
-        return new ArrayList<>(items.values());
-    }
+    private final Map<Long, Item> items = new HashMap<>();
 
     @Override
     public List<Item> getItemsByUserId(Long userId) {
@@ -24,6 +19,7 @@ public class ItemRepositoryImpl implements ItemRepository {
 
     @Override
     public Item createItem(Item item) {
+        item.setId(getNewItemId());
         items.put(item.getId(), item);
         return items.get(item.getId());
     }
@@ -51,10 +47,8 @@ public class ItemRepositoryImpl implements ItemRepository {
         return text.toLowerCase().contains(containsText.toLowerCase());
     }
 
-    @Override
-    public Long getNewItemId() {
-        return getItems().stream()
-                .map(Item::getId)
+    private Long getNewItemId() {
+        return items.keySet().stream()
                 .max(Long::compareTo)
                 .orElse(0L) + 1;
     }
