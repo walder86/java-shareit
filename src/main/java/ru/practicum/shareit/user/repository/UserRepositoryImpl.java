@@ -1,13 +1,10 @@
 package ru.practicum.shareit.user.repository;
 
 import org.springframework.stereotype.Repository;
-import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.AlreadyExistException;
 import ru.practicum.shareit.user.model.User;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Repository
 public class UserRepositoryImpl implements UserRepository {
@@ -20,8 +17,8 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public User getUserById(Long userId) {
-        return getUserByIdWithCheck(userId);
+    public Optional<User> getUserById(Long userId) {
+        return Optional.ofNullable(users.get(userId));
     }
 
     @Override
@@ -41,11 +38,20 @@ public class UserRepositoryImpl implements UserRepository {
         users.remove(userId);
     }
 
-    private User getUserByIdWithCheck(Long userId) {
-        User userById = users.get(userId);
-        if (userById == null) {
-            throw new NotFoundException("Пользователь с ID = " + userId + " не найден.");
+    @Override
+    public Long getNewUserId() {
+        return getUsers().stream()
+                .map(User::getId)
+                .max(Long::compareTo)
+                .orElse(0L) + 1;
+    }
+
+    @Override
+    public void checkEmail(String email) {
+        if (getUsers().stream()
+                .map(User::getEmail)
+                .anyMatch(email::equals)) {
+            throw new AlreadyExistException("Пользователь с почтой " + email + " уже существует");
         }
-        return userById;
     }
 }
