@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 public class ItemDto {
@@ -15,5 +17,6 @@ public class ItemDto {
     private String description;
     @NotNull(message = "Статус о доступности не может быть пустым")
     private Boolean available;
-    private Long requestId;
+
+    private List<CommentDto> comments;
 }
