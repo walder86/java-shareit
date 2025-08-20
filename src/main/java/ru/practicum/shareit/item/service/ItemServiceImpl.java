@@ -24,10 +24,7 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -45,8 +42,13 @@ public class ItemServiceImpl implements ItemService {
         log.info("Поиск вещей пользователя с ID = {}", userId);
         User user = userService.getUserWithCheck(userId);
         List<Item> itemsByUserId = itemRepository.findAllByOwner(user);
+        Map<Long, List<BookingDtoResponse>> bookingsByIdItem = getMapItemIdAndListBooking(
+                itemsByUserId.stream()
+                        .map(Item::getId)
+                        .toList());
         return itemsByUserId.stream()
                 .map(ItemMapper::toItemDto)
+                .peek(item -> item.setBookings(bookingsByIdItem.get(item.getId())))
                 .toList();
     }
 
@@ -140,9 +142,6 @@ public class ItemServiceImpl implements ItemService {
         User author = userService.getUserWithCheck(userId);
         Item item = getItemWithCheck(itemId);
         Comment comment = ItemMapper.toComment(commentDto, author, item);
-        comment.setItem(item);
-        comment.setAuthor(author);
-        comment.setCreated(LocalDateTime.now());
         return ItemMapper.toCommentDto(commentRepository.save(comment));
     }
 
@@ -150,6 +149,24 @@ public class ItemServiceImpl implements ItemService {
         if (!Objects.equals(item.getOwner().getId(), userIdFromRequest)) {
             throw new NotAccessException("Вещь с ID = " + item.getId() + " не принадлежит пользователю с ID = " + userIdFromRequest);
         }
+    }
+
+    private Map<Long, List<BookingDtoResponse>> getMapItemIdAndListBooking(List<Long> itemIds) {
+        Map<Long, List<BookingDtoResponse>> map = new HashMap<>();
+        List<BookingDtoResponse> bookings = bookingRepository.findAllByItemIdInOrderByStartDesc(itemIds).stream()
+                .map(booking -> BookingMapper.toBookingDtoResponse(
+                        booking,
+                        UserMapper.toUserDto(booking.getBooker()),
+                        ItemMapper.toItemDto(booking.getItem())))
+                .toList();
+        bookings.forEach(booking -> {
+            if (map.containsKey(booking.getItem().getId())) {
+                map.get(booking.getItem().getId()).add(booking);
+            } else {
+                map.put(booking.getItem().getId(), new ArrayList<>(Arrays.asList(booking)));
+            }
+        });
+        return map;
     }
 
 }

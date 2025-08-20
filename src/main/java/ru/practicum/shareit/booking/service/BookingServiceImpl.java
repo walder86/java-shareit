@@ -40,7 +40,7 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = getBookingWithCheck(bookingId);
         checkBookingUserForGet(userId, booking.getBooker().getId(), booking.getItem().getOwner().getId());
         return BookingMapper.toBookingDtoResponse(
-                getBookingWithCheck(bookingId),
+                booking,
                 UserMapper.toUserDto(booking.getBooker()),
                 ItemMapper.toItemDto(booking.getItem()));
     }
@@ -169,11 +169,14 @@ public class BookingServiceImpl implements BookingService {
         log.info("Подтверждение бронирования");
         Booking booking = getBookingWithCheck(bookingId);
         checkBookingUser(userId, booking.getItem().getOwner().getId());
+        if (!booking.getStatus().equals(Status.WAITING)) {
+            throw new ValidationException("Статус у бронирования должен быть \"В ожидании подтверждения\"");
+        }
         userService.getUserWithCheck(userId);
         if (approved) {
             booking.setStatus(Status.APPROVED);
         } else {
-            booking.setStatus(Status.APPROVED);
+            booking.setStatus(Status.REJECTED);
         }
         return BookingMapper.toBookingDtoResponse(
                 bookingRepository.save(booking),
@@ -181,20 +184,17 @@ public class BookingServiceImpl implements BookingService {
                 ItemMapper.toItemDto(booking.getItem()));
     }
 
-    public Booking getBookingWithCheck(Long bookingId) {
+    private Booking getBookingWithCheck(Long bookingId) {
         return bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NotFoundException("Бронирование с ID = " + bookingId + " не найдено"));
     }
 
     private void checkDates(LocalDateTime start, LocalDateTime end) {
-        if (start.isBefore(LocalDateTime.now())) {
-            throw new ValidationException("Дата начала бронирования не может быть раньше текущего времени");
-        }
-        if (end.isBefore(LocalDateTime.now())) {
-            throw new ValidationException("Дата окончания бронирования не может быть раньше текущего времени");
-        }
         if (start.isEqual(end)) {
             throw new ValidationException("Дата начала и дата окончания бронирования не могут быть равны");
+        }
+        if (start.isAfter(end)) {
+            throw new ValidationException("Дата начала бронирования не может быть позже даты окончания бронирования");
         }
     }
 
