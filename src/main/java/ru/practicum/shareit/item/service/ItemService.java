@@ -8,7 +8,7 @@ import ru.practicum.shareit.item.model.Item;
 import java.util.List;
 
 public interface ItemService {
-    List<ItemDto> getItemsByUserId(Long userId);
+    List<ItemByIdDto> getItemsByUserId(Long userId);
 
     Item getItemWithCheck(Long itemId);
 

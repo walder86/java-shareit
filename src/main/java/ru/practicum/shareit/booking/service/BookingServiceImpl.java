@@ -13,7 +13,7 @@ import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.NotAccessException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
-import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemByIdDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
@@ -100,7 +100,7 @@ public class BookingServiceImpl implements BookingService {
     public List<BookingDtoResponse> getBookingByItemsUser(Long userOwnerItemId, State state) {
         log.info("Запрос всех забронированных вещей пользователя с ID = " + userOwnerItemId);
         userService.getUserWithCheck(userOwnerItemId);
-        List<Long> itemIds = itemService.getItemsByUserId(userOwnerItemId).stream().map(ItemDto::getId).toList();
+        List<Long> itemIds = itemService.getItemsByUserId(userOwnerItemId).stream().map(ItemByIdDto::getId).toList();
         return switch (state) {
             case ALL -> bookingRepository.findAllByItemIdInOrderByStartDesc(itemIds).stream()
                     .map(booking -> BookingMapper.toBookingDtoResponse(

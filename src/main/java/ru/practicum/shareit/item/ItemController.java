@@ -19,7 +19,7 @@ public class ItemController {
     private final String userIdHeader = "X-Sharer-User-Id";
 
     @GetMapping
-    public List<ItemDto> getItemsByUserId(@RequestHeader(userIdHeader) Long userId) {
+    public List<ItemByIdDto> getItemsByUserId(@RequestHeader(userIdHeader) Long userId) {
         return itemService.getItemsByUserId(userId);
     }
 

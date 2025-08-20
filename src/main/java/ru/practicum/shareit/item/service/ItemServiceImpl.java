@@ -38,7 +38,7 @@ public class ItemServiceImpl implements ItemService {
 
 
     @Override
-    public List<ItemDto> getItemsByUserId(Long userId) {
+    public List<ItemByIdDto> getItemsByUserId(Long userId) {
         log.info("Поиск вещей пользователя с ID = {}", userId);
         User user = userService.getUserWithCheck(userId);
         List<Item> itemsByUserId = itemRepository.findAllByOwner(user);
@@ -47,8 +47,18 @@ public class ItemServiceImpl implements ItemService {
                         .map(Item::getId)
                         .toList());
         return itemsByUserId.stream()
-                .map(ItemMapper::toItemDto)
-                .peek(item -> item.setBookings(bookingsByIdItem.get(item.getId())))
+                .map(item -> {
+                    List<BookingDtoResponse> bookings = bookingsByIdItem.getOrDefault(item.getId(), new ArrayList<>());
+                    BookingDtoResponse lastBooking = bookings.stream()
+                            .filter(booking -> booking.getStatus().equals(Status.APPROVED))
+                            .max(Comparator.comparing(BookingDtoResponse::getEnd))
+                            .orElse(null);
+                    BookingDtoResponse nextBooking = bookings.stream()
+                            .filter(booking -> booking.getStatus().equals(Status.APPROVED))
+                            .min(Comparator.comparing(BookingDtoResponse::getStart))
+                            .orElse(null);
+                    return ItemMapper.toItemByIdDto(item, nextBooking, lastBooking);
+                })
                 .toList();
     }
 
