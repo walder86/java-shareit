@@ -38,4 +38,11 @@ public class ErrorHandler {
         log.debug(e.getMessage(), e);
         return new ErrorResponse(HttpStatus.FORBIDDEN.value(), e.getMessage());
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleValidationException(ValidationException e) {
+        log.debug(e.getMessage(), e);
+        return new ErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getMessage());
+    }
 }
