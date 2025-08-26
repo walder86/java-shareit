@@ -22,16 +22,23 @@ public class ItemRequestController {
     }
 
     @GetMapping
-    public List<ItemRequestDto> getPrivateRequests(
+    public List<ItemRequestDto> getItemRequestByRequesterId(
             @RequestHeader(userIdHeader) Long requesterId) {
         return itemRequestService
                 .getItemRequestByRequesterId(requesterId);
     }
 
-    @GetMapping("{requestId}")
+    @GetMapping("/all")
+    public List<ItemRequestDto> getItemRequestOtherUsers(
+            @RequestHeader(userIdHeader) Long userId) {
+        return itemRequestService.getItemRequestOtherUsers(userId);
+    }
+
+    @GetMapping("/{requestId}")
     public ItemRequestDto getItemRequest(
             @RequestHeader(userIdHeader) Long userId,
             @PathVariable Long requestId) {
         return itemRequestService.getItemRequestById(userId, requestId);
     }
+
 }

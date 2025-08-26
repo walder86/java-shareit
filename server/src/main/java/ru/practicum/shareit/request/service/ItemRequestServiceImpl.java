@@ -11,7 +11,6 @@ import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -24,15 +23,15 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Override
     public ItemRequestDto createItemRequest(ItemRequestDto itemRequestDto, Long requesterId) {
+        log.info("Создание запроса");
         User user = userService.getUserWithCheck(requesterId);
         ItemRequest newRequest = ItemRequestMapper.toItemRequest(itemRequestDto, user);
-        newRequest.setRequester(user);
-        newRequest.setCreated(LocalDateTime.now());
         return ItemRequestMapper.toItemRequestDto(itemRequestRepository.save(newRequest));
     }
 
     @Override
     public List<ItemRequestDto> getItemRequestByRequesterId(Long requesterId) {
+        log.info("Получение запросов для пользователя с ID = {}", requesterId);
         userService.getUserWithCheck(requesterId);
         List<ItemRequest> itemRequests = itemRequestRepository.findAllByRequesterId(requesterId);
         return itemRequests.stream()
@@ -41,7 +40,18 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
+    public List<ItemRequestDto> getItemRequestOtherUsers(Long userId) {
+        log.info("Получение запросов пользователей, кроме пользователя с ID = {}", userId);
+        userService.getUserWithCheck(userId);
+        List<ItemRequest> itemRequests = itemRequestRepository.findAllByRequesterIdNot(userId);
+        return itemRequests.stream()
+                .map(ItemRequestMapper::toItemRequestDto)
+                .toList();
+    }
+
+    @Override
     public ItemRequestDto getItemRequestById(Long userId, Long requestId) {
+        log.info("Получение запроса с ID = {} для пользователя с ID = {}", requestId, userId);
         userService.getUserWithCheck(userId);
         ItemRequest itemRequest = getItemRequestWithCheck(requestId);
         return ItemRequestMapper.toItemRequestDto(itemRequest, itemRequest.getItems());

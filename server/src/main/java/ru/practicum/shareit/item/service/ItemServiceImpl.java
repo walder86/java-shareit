@@ -142,9 +142,6 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public List<ItemDto> searchItemsByText(String text) {
         log.info("Поиск вещей по тексту \"{}\"", text);
-        if (text.isBlank()) {
-            return new ArrayList<>();
-        }
         return itemRepository.findAllByTextIgnoreCaseAndAvailableIsTrue(text).stream()
                 .map(ItemMapper::toItemDto)
                 .toList();

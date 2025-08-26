@@ -24,8 +24,15 @@ public class ItemRequestController {
     @GetMapping
     public ResponseEntity<Object> getItemRequestByRequesterId(
             @RequestHeader("X-Sharer-User-Id") Long requesterId) {
-        log.info("Получение запроса с параметрами: requesterId={}", requesterId);
+        log.info("Получение запросов с параметрами: requesterId={}", requesterId);
         return itemRequestClient.getItemRequestByRequesterId(requesterId);
+    }
+
+    @GetMapping("all")
+    public ResponseEntity<Object> getItemRequestOtherUsers(
+            @RequestHeader("X-Sharer-User-Id") Long userId) {
+        log.info("Получение запросов с параметрами: userId={}", userId);
+        return itemRequestClient.getItemRequestOtherUsers(userId);
     }
 
     @GetMapping("{requestId}")

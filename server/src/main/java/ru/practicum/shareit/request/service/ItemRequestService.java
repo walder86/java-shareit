@@ -10,6 +10,8 @@ public interface ItemRequestService {
 
     List<ItemRequestDto> getItemRequestByRequesterId(Long requesterId);
 
+    List<ItemRequestDto> getItemRequestOtherUsers(Long requesterId);
+
     ItemRequestDto getItemRequestById(Long userId, Long requestId);
 
     ItemRequest getItemRequestWithCheck(Long itemRequestId);
